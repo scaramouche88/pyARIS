@@ -1,11 +1,12 @@
 ## pyARIS
 
-this is a test
-
 This package provides an interface between python and ARIS files.
+
+This version of the package provides the basis for the data treatement and ML analysis developed by G. Fernandez Garcia
 
 ###Additional sources of information:
 Soundmetrics GitHub Repo.: https://github.com/SoundMetrics
+Original pyARIS Repo.: https://github.com/EminentCodfish/pyARIS
 
 Currently this packages has only been tested with the ARIS Explorer 3000
 in 128 beam mode.  It should work with other versions, but they have yet to 
