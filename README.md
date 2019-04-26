@@ -22,6 +22,8 @@ be tested.  This package currently doesn't support the tele-photo len.
 * Pytz (2015.4)
 * ffmpeg (Optional for exporting to video)
 
+Soon it will be compatible with Py3 and Py3.7
+
 ### Getting Started
 
 #### Importing package and opening a file.
