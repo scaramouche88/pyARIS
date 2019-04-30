@@ -174,7 +174,7 @@ class ARIS_Frame(ARIS_File):
                     self.sonayz = sonarz # Sonar Z location for 3D processing
                     self.sonarpan = sonarpan # X2 pan output
                     self.sonartilt = sonartilt # X2 tilt output
-                    self.sonarroll = sonarroll # X2 roll output                                                                                                                       **** End of DDF_03 frame header data ****
+                    self.sonarroll = sonarroll # X2 roll output                         				# End of DDF_03 frame header data ****
                     self.panpnnl = panpnnl
                     self.tiltpnnl = tiltpnnl 
                     self.rollpnnl = rollpnnl 
@@ -472,7 +472,7 @@ def FrameRead(ARIS_data, frameIndex, frameBuffer = None):
     sonarz              = struct.unpack('f', data.read(4))[0] # Sonar Z location for 3D processing
     sonarpan            = struct.unpack('f', data.read(4))[0] # X2 pan output
     sonartilt           = struct.unpack('f', data.read(4))[0] # X2 tilt output
-    sonarroll           = struct.unpack('f', data.read(4))[0] # X2 roll output                                                                                                                       **** End of DDF_03 frame header data ****
+    sonarroll           = struct.unpack('f', data.read(4))[0] # X2 roll output              \                                                                  **** End of DDF_03 frame header data ****
     panpnnl             = struct.unpack('f', data.read(4))[0]
     tiltpnnl            = struct.unpack('f', data.read(4))[0] 
     rollpnnl            = struct.unpack('f', data.read(4))[0] 
@@ -733,7 +733,8 @@ def VideoExport(data, filename, fps = 24.0, start_frame = 1, end_frame = None, t
     
     Notes
     ------
-    Currently this function looks for ffmpeg.exe in the current working directory.
+    Currently this function looks for ffmpeg in the current working directory.
+    In the old version it calls ffmpeg.exe.
     Must have the '*.mp4' file extension.
     Uses the tqdm package to display a status bar.
     
@@ -744,7 +745,8 @@ def VideoExport(data, filename, fps = 24.0, start_frame = 1, end_frame = None, t
     """
     
     #Command to send via the command prompt which specifies the pipe parameters
-    command = ['ffmpeg.exe',
+    #In the original version the command calls ffmpeg.exe
+    command = ['ffmpeg',
            '-y', # (optional) overwrite output file if it exists
            '-f', 'image2pipe',
            '-vcodec','mjpeg',
@@ -774,3 +776,5 @@ def VideoExport(data, filename, fps = 24.0, start_frame = 1, end_frame = None, t
         im.save(pipe.stdin, 'JPEG')
 
     pipe.stdin.close()
+
+

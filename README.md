@@ -27,9 +27,14 @@ Soon it will be compatible with Py3 and Py3.7
 ### Getting Started
 
 #### Importing package and opening a file.
+
+The script "pyARIS_test.py" can be run (commenting the various sections) in order to test
+the different functionalities of pyARIS.
+
 ```python
 	import pyARIS
-	filename = 'C:/Test_file.aris'
+        from pyARIS import FrameRead
+	filename = '~/Test_file.aris'
 	ARISdata, frame = pyARIS.DataImport(filename)
 ```
 
@@ -45,7 +50,8 @@ frameBuffer: Adds a specified number of pixels to be added to the remapped frame
 
 #### Retrieving Frame Data
 
-Once the data file has been opened, specific frames can be loaded.  
+Once the data file has been opened, specific frames can be loaded. It is important
+to notice that the real-world mappin is done by FrameRead
 
 ```python
 	frame = pyARIS.FrameRead(ARISdata, 2)
