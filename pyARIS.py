@@ -385,8 +385,6 @@ def DataImport(filename, startFrame = 1, frameBuffer = 0):
     
 def FrameRead(ARIS_data, frameIndex, frameBuffer = None):
     """The FrameRead function loads in the specified frame data from the raw ARIS data.  
-    The function then calls the remapARIS() function which remaps the raw data into 
-    a 2D real world projection.
     
     Parameters
     -----------
@@ -629,38 +627,8 @@ def FrameRead(ARIS_data, frameIndex, frameBuffer = None):
     if ARIS_data.LUP == None:
         createLUP(ARIS_data, output)
     
-    #Remap the first frame
-    remapARIS(ARIS_data, output, frameBuffer)
-    
     return output
     
-'''Data remapping functions'''
-
-def getXY(beamnum, binnum, frame):
-    #WinStart = frame.samplestartdelay * 0.000001 * frame.soundspeed / 2
-    bin_dist = frame.WinStart + frame.sampleperiod * binnum * 0.000001 * frame.soundspeed / 2
-    beam_angle = beamLookUp.beamAngle(beamnum, frame.BeamCount)
-    x = bin_dist*np.sin(np.deg2rad(-beam_angle))
-    y = bin_dist*np.cos(np.deg2rad(-beam_angle))
-    return x, y
-
-def getBeamBin(x,y, frame):
-    #WinStart = frame.samplestartdelay * 0.000001 * frame.soundspeed / 2
-    angle = np.rad2deg(np.tan(x/y))
-    hyp = y/np.cos(np.deg2rad(angle))
-    binnum2 = int((2*(hyp-frame.WinStart))/(frame.sampleperiod * 0.000001 * frame.soundspeed))
-    beamnum = beamLookUp.BeamLookUp(-angle, frame.BeamCount)
-    return beamnum, binnum2
-    
-def px2Meters(x,y, frame, xdim = None):
-    #WinStart = frame.samplestartdelay * 0.000001 * frame.soundspeed / 2
-    pix2Meter = frame.sampleperiod * 0.000001 * frame.soundspeed / 2
-    if xdim == None:
-        xdim = int(getXY(0,frame.samplesperbeam, frame)[0]*(1/pix2Meter)*2)
-    x1 = (x - xdim/2) * pix2Meter #Convert X pixel to X dimension
-    y1 = (y*pix2Meter)+(frame.WinStart) #Convert Y pixel to y dimension
-    return x1, y1    
-
 def createLUP(ARISFile, frame):
     #Lookup dimensions
     SampleLength = frame.sampleperiod * 0.000001 * frame.soundspeed / 2
@@ -680,38 +648,6 @@ def createLUP(ARISFile, frame):
                 
     ARISFile.LUP = LUP
 
-def remapARIS(ARISFile, frame, frameBuffer = None): 
-    """This function remaps the pixels from the bin/beam format to a 2D real world
-    format with pixel resolution equal to the SampleLength.
-    
-    Parameters
-    -----------
-    ARISFile : ARIS data structure returned via pyARIS.DataImport()
-    frame : frame number to be remapped
-    frameBuffer : This parameter add a specified number of pixels around the edges.   
-    
-    Returns
-    -------
-    A remapped frame which is stored in the frames data structure as frame.remap    
-    """               
-    #Create an empty frame
-    Remap = np.zeros([ARISFile.xdim,ARISFile.ydim])
-    
-    #Populate the empty frame
-    for key in ARISFile.LUP:
-        Remap[key[0],key[1]] = frame.frame_data[ARISFile.LUP[key][0], ARISFile.LUP[key][1]]
-        
-    Remap = np.rot90(Remap, 1)
-    
-    #Add buffer is requested
-    if frameBuffer != None:
-        buffY = int(ARISFile.ydim*frameBuffer)
-        buffX = int(ARISFile.xdim*frameBuffer)
-        Remap = np.concatenate((np.ones([ARISFile.ydim, buffX]), Remap, np.ones([ARISFile.ydim, buffX])), axis = 1)
-        Remap = np.concatenate((np.ones([buffY,ARISFile.xdim+buffX*2]), Remap, np.ones([buffY,ARISFile.xdim+buffX*2])))
-        
-    #Add to frame data
-    frame.remap = Remap.astype('uint8')
     
 def VideoExport(data, filename, fps = 24.0, start_frame = 1, end_frame = None, timestamp = False, fontsize = 30, ts_pos = (0,0)):
     """Output video using the ffmpeg pipeline. The current implementation 
