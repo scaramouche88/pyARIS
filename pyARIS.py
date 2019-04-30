@@ -648,6 +648,32 @@ def createLUP(ARISFile, frame):
                 
     ARISFile.LUP = LUP
 
+'''Data remapping functions'''
+
+def getXY(beamnum, binnum, frame):
+    #WinStart = frame.samplestartdelay * 0.000001 * frame.soundspeed / 2
+    bin_dist = frame.WinStart + frame.sampleperiod * binnum * 0.000001 * frame.soundspeed / 2
+    beam_angle = beamLookUp.beamAngle(beamnum, frame.BeamCount)
+    x = bin_dist*np.sin(np.deg2rad(-beam_angle))
+    y = bin_dist*np.cos(np.deg2rad(-beam_angle))
+    return x, y
+
+def getBeamBin(x,y, frame):
+    #WinStart = frame.samplestartdelay * 0.000001 * frame.soundspeed / 2
+    angle = np.rad2deg(np.tan(x/y))
+    hyp = y/np.cos(np.deg2rad(angle))
+    binnum2 = int((2*(hyp-frame.WinStart))/(frame.sampleperiod * 0.000001 * frame.soundspeed))
+    beamnum = beamLookUp.BeamLookUp(-angle, frame.BeamCount)
+    return beamnum, binnum2
+
+def px2Meters(x,y, frame, xdim = None):
+    #WinStart = frame.samplestartdelay * 0.000001 * frame.soundspeed / 2
+    pix2Meter = frame.sampleperiod * 0.000001 * frame.soundspeed / 2
+    if xdim == None:
+        xdim = int(getXY(0,frame.samplesperbeam, frame)[0]*(1/pix2Meter)*2)
+    x1 = (x - xdim/2) * pix2Meter #Convert X pixel to X dimension
+    y1 = (y*pix2Meter)+(frame.WinStart) #Convert Y pixel to y dimension
+    return x1, y1
     
 def VideoExport(data, filename, fps = 24.0, start_frame = 1, end_frame = None, timestamp = False, fontsize = 30, ts_pos = (0,0)):
     """Output video using the ffmpeg pipeline. The current implementation 
@@ -703,7 +729,7 @@ def VideoExport(data, filename, fps = 24.0, start_frame = 1, end_frame = None, t
     #Iterate through the dataframes and push to pipe       
     for i in tqdm.tqdm(range(start_frame-1, end_frame)):
         frame = FrameRead(data, i)
-        im = Image.fromarray(frame.remap)
+        im = Image.fromarray(frame)
         if timestamp == True:
             ts = str(datetime.datetime.fromtimestamp(frame.sonartimestamp/1000000, pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:%S'))
             draw = ImageDraw.Draw(im)
@@ -713,4 +739,41 @@ def VideoExport(data, filename, fps = 24.0, start_frame = 1, end_frame = None, t
 
     pipe.stdin.close()
 
+
+
+def SubtractorMOG2(orig_video, filtered_video):
+
+    """Once the video in mp4 is created, it is passed to a MOG2 filter.
+    It works with all the format of OpenCV.
+
+    Parameters
+    -----------
+
+    orig_video : output from VideoExport
+    filtered_video : filtered video
+    
+    Returns
+    -------
+    filtered_video : filtered video
+    """
+
+    cap = cv2.VideoCapture(orig_video)
+
+    fgbg = cv2.createBackgroundSubtractorMOG2(varThreshold = 50)
+
+    out = cv2.VideoWriter(filtered_video,cv2.VideoWriter_fourcc('M','P','4','V'), 24, (793,1327))
+
+    while(1):
+     ret, frame = cap.read()
+ 
+     fgmask = fgbg.apply(frame)
+     out.write(fgmask)
+     cv2.imshow('frame',fgmask)
+     k = cv2.waitKey(30) & 0xff
+     if k == 10:
+      break
+ 
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
 

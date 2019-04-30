@@ -2,6 +2,8 @@
 
 This package provides an interface between python and ARIS files.
 
+############ NOT WORKING YET ###############
+
 This version of the package provides the basis for the data treatement and ML analysis developed by G. Fernandez Garcia
 This branch provides an implementation with cv2 MOG2 filter for ARIS files and avoids the original real-world mapping
 
