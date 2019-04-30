@@ -102,5 +102,5 @@ the frame.  Timestamp parameters include the fontsize and position (ts_pos).
 
 To implement:
 ```python
-	pyARIS.VideoExport(data, 'test_video.mp4', start_frame = 10, end_frame = 50, timestamp = True, fontsize=30, ts_pos = (10,1200))
+	pyARIS.VideoExport(ARISdata, 'test_video.mp4', start_frame = 10, end_frame = 50, timestamp = True, fontsize=30, ts_pos = (10,1200))
 ```
